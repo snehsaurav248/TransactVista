@@ -4,11 +4,7 @@ import { fetchStatistics } from "../../services/api"; // ✅ Correct import
 
 const CombinedData = () => {
   const { selectedMonth } = useContext(DataContext);
-  const [stats, setStats] = useState({
-    totalSale: 0,
-    soldItems: 0,
-    unsoldItems: 0,
-  });
+  const [stats, setStats] = useState({ totalSale: 0, soldItems: 0, unsoldItems: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -16,13 +12,18 @@ const CombinedData = () => {
     setLoading(true);
     setError(null);
 
-    fetchStatistics(selectedMonth) // ✅ Fix function call
+    fetchStatistics(selectedMonth)
       .then((data) => {
-        setStats({
-          totalSale: data?.totalSaleAmount || 0,
-          soldItems: data?.totalSoldItems || 0,
-          unsoldItems: data?.totalNotSoldItems || 0,
-        });
+        if (data) {
+          setStats({
+            totalSale: data.totalSaleAmount || 0,
+            soldItems: data.totalSoldItems || 0,
+            unsoldItems: data.totalNotSoldItems || 0,
+          });
+        } else {
+          console.error("Invalid Statistics Data:", data);
+          setError("Invalid data received.");
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -32,13 +33,8 @@ const CombinedData = () => {
       });
   }, [selectedMonth]);
 
-  if (loading) {
-    return <p className="text-center text-gray-500">Loading statistics...</p>;
-  }
-
-  if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
-  }
+  if (loading) return <p className="text-center text-gray-500">Loading statistics...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">

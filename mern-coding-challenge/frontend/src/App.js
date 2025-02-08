@@ -1,48 +1,47 @@
-import React, { useEffect, useState, useContext } from "react";
-import { Pie } from "react-chartjs-2";
+import React, { useState } from "react";
+import Header from "./components/Header";
+import TransactionTable from "./components/Transactions/TransactionTable";
+import StatisticsBox from "./components/Statistics/StatisticsBox";
+import BarChart from "./components/Charts/BarChart";
+import PieChart from "./components/Charts/PieChart";
+import CombinedData from "./components/Combined/CombinedData";
 import { DataContext } from "./context/DataContext";
-import { fetchStatistics } from "./services/api";  // ✅ Use correct import
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-// ✅ Register the required Chart.js elements
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-const PieChart = () => {
-  const { selectedMonth } = useContext(DataContext);
-  const [chartData, setChartData] = useState({ labels: [], values: [] });
-
-  useEffect(() => {
-    fetchStatistics(selectedMonth) // ✅ Use fetchStatistics instead of fetchPieChartData
-      .then((data) => {
-        if (data?.categories && data?.values) {
-          setChartData({
-            labels: data.categories,
-            values: data.values,
-          });
-        } else {
-          console.error("Invalid Pie Chart Data:", data);
-        }
-      })
-      .catch((error) => console.error("Error fetching pie chart data:", error));
-  }, [selectedMonth]);
+const App = () => {
+  const [selectedMonth, setSelectedMonth] = useState("March");
 
   return (
-    <div className="mt-4">
-      <Pie
-        data={{
-          labels: chartData.labels,
-          datasets: [
-            {
-              data: chartData.values,
-              backgroundColor: [
-                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
-              ],
-            },
-          ],
-        }}
-      />
-    </div>
+    <DataContext.Provider value={{ selectedMonth, setSelectedMonth }}>
+      <div className="container mx-auto p-4">
+        <Header />
+        
+        {/* Month Selector Dropdown */}
+        <div className="mb-4 flex justify-end">
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="border p-2 rounded-md shadow-sm bg-white"
+          >
+            {["January", "February", "March", "April", "May"].map((month) => (
+              <option key={month} value={month}>{month}</option>
+            ))}
+          </select>
+        </div>
+
+        <StatisticsBox />
+        <TransactionTable />
+
+        {/* Combined Data (Previously Summary Cards) */}
+        <CombinedData />  
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <BarChart />
+          <PieChart />
+        </div>
+      </div>
+    </DataContext.Provider>
   );
 };
 
-export default PieChart;
+export default App;

@@ -9,15 +9,15 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PieChart = () => {
   const { selectedMonth } = useContext(DataContext);
-  const [chartData, setChartData] = useState({ labels: [], values: [] });
+  const [chartData, setChartData] = useState({ labels: [], data: [] });
 
   useEffect(() => {
     fetchPieChartData(selectedMonth)
       .then((data) => {
-        if (data && data.categories && data.values) {
+        if (data?.categories?.length && data?.values?.length) {
           setChartData({
             labels: data.categories,
-            values: data.values,
+            data: data.values,
           });
         } else {
           console.error("Invalid Pie Chart Data:", data);
@@ -33,17 +33,14 @@ const PieChart = () => {
           labels: chartData.labels,
           datasets: [
             {
-              data: chartData.values,
+              data: chartData.data,
               backgroundColor: [
                 "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
               ],
             },
           ],
         }}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-        }}
+        options={{ responsive: true, maintainAspectRatio: false }}
       />
     </div>
   );

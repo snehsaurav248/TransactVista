@@ -12,20 +12,24 @@ import {
   Legend
 } from "chart.js";
 
-// ✅ Register required components
+// ✅ Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const BarChart = () => {
   const { selectedMonth } = useContext(DataContext);
-  const [chartData, setChartData] = useState({ labels: [], values: [] });
+  const [chartData, setChartData] = useState({ labels: [], data: [] });
 
   useEffect(() => {
     fetchBarChartData(selectedMonth).then((data) => {
-      setChartData({
-        labels: data.labels,
-        values: data.values,
-      });
-    });
+      if (data?.labels?.length && data?.values?.length) {
+        setChartData({
+          labels: data.labels,
+          data: data.values,
+        });
+      } else {
+        console.error("Invalid Bar Chart Data:", data);
+      }
+    }).catch((error) => console.error("Error fetching bar chart data:", error));
   }, [selectedMonth]);
 
   return (
@@ -36,11 +40,14 @@ const BarChart = () => {
           datasets: [
             {
               label: "Items in Price Range",
-              data: chartData.values,
-              backgroundColor: "rgba(75,192,192,0.4)",
+              data: chartData.data,
+              backgroundColor: "rgba(75,192,192,0.6)",
+              borderColor: "rgba(75,192,192,1)",
+              borderWidth: 1,
             },
           ],
         }}
+        options={{ responsive: true, maintainAspectRatio: false }}
       />
     </div>
   );
