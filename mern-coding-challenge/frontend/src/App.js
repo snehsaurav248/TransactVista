@@ -1,23 +1,48 @@
-import React, { useState } from "react";
-import Header from "./components/Header";
-import TransactionTable from "./components/Transactions/TransactionTable";
-import StatisticsBox from "./components/Statistics/StatisticsBox";
-import BarChart from "./components/Charts/BarChart";
+import React, { useEffect, useState, useContext } from "react";
+import { Pie } from "react-chartjs-2";
 import { DataContext } from "./context/DataContext";
+import { fetchStatistics } from "./services/api";  // ✅ Use correct import
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-const App = () => {
-  const [selectedMonth, setSelectedMonth] = useState("March");
+// ✅ Register the required Chart.js elements
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const PieChart = () => {
+  const { selectedMonth } = useContext(DataContext);
+  const [chartData, setChartData] = useState({ labels: [], values: [] });
+
+  useEffect(() => {
+    fetchStatistics(selectedMonth) // ✅ Use fetchStatistics instead of fetchPieChartData
+      .then((data) => {
+        if (data?.categories && data?.values) {
+          setChartData({
+            labels: data.categories,
+            values: data.values,
+          });
+        } else {
+          console.error("Invalid Pie Chart Data:", data);
+        }
+      })
+      .catch((error) => console.error("Error fetching pie chart data:", error));
+  }, [selectedMonth]);
 
   return (
-    <DataContext.Provider value={{ selectedMonth, setSelectedMonth }}>
-      <div className="container mx-auto p-4">
-        <Header />
-        <StatisticsBox />
-        <TransactionTable />
-        <BarChart />
-      </div>
-    </DataContext.Provider>
+    <div className="mt-4">
+      <Pie
+        data={{
+          labels: chartData.labels,
+          datasets: [
+            {
+              data: chartData.values,
+              backgroundColor: [
+                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
+              ],
+            },
+          ],
+        }}
+      />
+    </div>
   );
 };
 
-export default App;
+export default PieChart;
