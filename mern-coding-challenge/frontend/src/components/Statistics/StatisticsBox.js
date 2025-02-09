@@ -1,29 +1,23 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import { DataContext } from "../../context/DataContext";
-import { fetchStatistics } from "../../services/api";
+import transactionsData from "../../data/transactionsData";
 
 const StatisticsBox = () => {
   const { selectedMonth } = useContext(DataContext);
-  const [stats, setStats] = useState({ totalSales: 0, soldItems: 0, notSold: 0 });
 
-  useEffect(() => {
-    fetchStatistics(selectedMonth).then(setStats);
-  }, [selectedMonth]);
+  const filteredTransactions = transactionsData.filter(
+    (txn) => txn.month === selectedMonth
+  );
+
+  const totalSpending = filteredTransactions.reduce(
+    (sum, txn) => sum + txn.amount,
+    0
+  );
 
   return (
-    <div className="grid grid-cols-3 gap-4 mt-4">
-      <div className="p-4 bg-green-200 rounded">
-        <h3>Total Sales</h3>
-        <p>${stats.totalSales}</p>
-      </div>
-      <div className="p-4 bg-blue-200 rounded">
-        <h3>Sold Items</h3>
-        <p>{stats.soldItems}</p>
-      </div>
-      <div className="p-4 bg-red-200 rounded">
-        <h3>Not Sold</h3>
-        <p>{stats.notSold}</p>
-      </div>
+    <div className="p-4 border rounded-md shadow-md">
+      <h2 className="text-lg font-semibold">Statistics for {selectedMonth}</h2>
+      <p>Total Spending: ${totalSpending.toFixed(2)}</p>
     </div>
   );
 };

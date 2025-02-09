@@ -3,10 +3,7 @@ import { DataContext } from "../context/DataContext";
 
 const Header = () => {
   const { selectedMonth, setSelectedMonth } = useContext(DataContext);
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   return (
     <div className="flex justify-between items-center p-4 bg-gray-200 rounded-lg">

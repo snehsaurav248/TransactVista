@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { DataContext } from "../../context/DataContext";
-import { fetchStatistics } from "../../services/api"; // ✅ Correct import
+import { fetchStatistics } from "../../services/api";
 
 const CombinedData = () => {
   const { selectedMonth } = useContext(DataContext);
@@ -14,7 +14,7 @@ const CombinedData = () => {
 
     fetchStatistics(selectedMonth)
       .then((data) => {
-        if (data) {
+        if (data && typeof data === "object") {
           setStats({
             totalSale: data.totalSaleAmount || 0,
             soldItems: data.totalSoldItems || 0,
@@ -38,18 +38,16 @@ const CombinedData = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-      <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md text-center">
-        <h3 className="text-xl font-bold">Total Sale</h3>
-        <p className="text-2xl">₹{stats.totalSale.toLocaleString()}</p>
-      </div>
-      <div className="bg-green-500 text-white p-4 rounded-lg shadow-md text-center">
-        <h3 className="text-xl font-bold">Sold Items</h3>
-        <p className="text-2xl">{stats.soldItems.toLocaleString()}</p>
-      </div>
-      <div className="bg-red-500 text-white p-4 rounded-lg shadow-md text-center">
-        <h3 className="text-xl font-bold">Not Sold Items</h3>
-        <p className="text-2xl">{stats.unsoldItems.toLocaleString()}</p>
-      </div>
+      {[
+        { label: "Total Sale", value: stats.totalSale, color: "bg-blue-500", prefix: "₹" },
+        { label: "Sold Items", value: stats.soldItems, color: "bg-green-500" },
+        { label: "Not Sold Items", value: stats.unsoldItems, color: "bg-red-500" },
+      ].map((item, index) => (
+        <div key={index} className={`${item.color} text-white p-4 rounded-lg shadow-md text-center`}>
+          <h3 className="text-xl font-bold">{item.label}</h3>
+          <p className="text-2xl">{item.prefix || ""}{item.value.toLocaleString()}</p>
+        </div>
+      ))}
     </div>
   );
 };

@@ -6,24 +6,30 @@ const getMonthFromDate = (dateString) => {
 
 // Fetch transactions with optional search
 export const fetchTransactions = async (month, search = "") => {
-  const response = await fetch(API_URL);
-  const data = await response.json();
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error("Failed to fetch transactions");
 
-  return data
-    .filter((txn) => getMonthFromDate(txn.dateOfSale) === month)
-    .filter((txn) => txn.title.toLowerCase().includes(search.toLowerCase()));
+    const data = await response.json();
+    return data
+      .filter((txn) => getMonthFromDate(txn.dateOfSale) === month)
+      .filter((txn) => txn.title?.toLowerCase().includes(search.toLowerCase()));
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return [];
+  }
 };
 
 // Fetch statistics (Total Sales, Items Sold, Transactions)
 export const fetchStatistics = async (month) => {
   const transactions = await fetchTransactions(month);
-  const totalSales = transactions.reduce((sum, txn) => sum + txn.price, 0);
+  const totalSales = transactions.reduce((sum, txn) => sum + (txn.price || 0), 0);
   const totalItemsSold = transactions.length;
 
   return {
     totalSales: totalSales.toFixed(2),
     totalItemsSold,
-    totalTransactions: transactions.length,
+    totalTransactions: totalItemsSold,
   };
 };
 
@@ -57,7 +63,6 @@ export const fetchPieChartData = async (month) => {
   const transactions = await fetchTransactions(month);
 
   const categoryCount = {};
-
   transactions.forEach((txn) => {
     categoryCount[txn.category] = (categoryCount[txn.category] || 0) + 1;
   });

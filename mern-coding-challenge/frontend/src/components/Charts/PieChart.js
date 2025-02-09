@@ -1,49 +1,36 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext } from "react";
 import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { DataContext } from "../../context/DataContext";
-import { fetchPieChartData } from "../../services/api";
-
-// ✅ Register required Chart.js elements
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PieChart = () => {
-  const { selectedMonth } = useContext(DataContext);
-  const [chartData, setChartData] = useState({ labels: [], data: [] });
+  const { transactionsData, selectedMonth } = useContext(DataContext);
 
-  useEffect(() => {
-    fetchPieChartData(selectedMonth)
-      .then((data) => {
-        if (data?.categories?.length && data?.values?.length) {
-          setChartData({
-            labels: data.categories,
-            data: data.values,
-          });
-        } else {
-          console.error("Invalid Pie Chart Data:", data);
-        }
-      })
-      .catch((error) => console.error("Error fetching pie chart data:", error));
-  }, [selectedMonth]);
+  if (!transactionsData || transactionsData.length === 0) {
+    return <p>Loading or no data available...</p>;
+  }
 
-  return (
-    <div className="mt-4">
-      <Pie
-        data={{
-          labels: chartData.labels,
-          datasets: [
-            {
-              data: chartData.data,
-              backgroundColor: [
-                "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
-              ],
-            },
-          ],
-        }}
-        options={{ responsive: true, maintainAspectRatio: false }}
-      />
-    </div>
+  const filteredTransactions = transactionsData.filter(txn => txn.month === selectedMonth);
+
+  if (filteredTransactions.length === 0) {
+    return <p>No data available for {selectedMonth}.</p>;
+  }
+
+  const categories = [...new Set(filteredTransactions.map(txn => txn.category))];
+  const dataValues = categories.map(category =>
+    filteredTransactions.filter(txn => txn.category === category).reduce((sum, txn) => sum + txn.amount, 0)
   );
+
+  const chartData = {
+    labels: categories,
+    datasets: [
+      {
+        data: dataValues,
+        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"],
+      },
+    ],
+  };
+
+  return <Pie data={chartData} />;
 };
 
 export default PieChart;

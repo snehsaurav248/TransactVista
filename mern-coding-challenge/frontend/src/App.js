@@ -1,46 +1,22 @@
-import React, { useState } from "react";
-import Header from "./components/Header";
-import TransactionTable from "./components/Transactions/TransactionTable";
-import StatisticsBox from "./components/Statistics/StatisticsBox";
+import React from "react";
 import BarChart from "./components/Charts/BarChart";
 import PieChart from "./components/Charts/PieChart";
-import CombinedData from "./components/Combined/CombinedData";
-import { DataContext } from "./context/DataContext";
 
 const App = () => {
-  const [selectedMonth, setSelectedMonth] = useState("March");
-
   return (
-    <DataContext.Provider value={{ selectedMonth, setSelectedMonth }}>
-      <div className="container mx-auto p-4">
-        <Header />
-        
-        {/* Month Selector Dropdown */}
-        <div className="mb-4 flex justify-end">
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="border p-2 rounded-md shadow-sm bg-white"
-          >
-            {["January", "February", "March", "April", "May"].map((month) => (
-              <option key={month} value={month}>{month}</option>
-            ))}
-          </select>
-        </div>
-
-        <StatisticsBox />
-        <TransactionTable />
-
-        {/* Combined Data (Previously Summary Cards) */}
-        <CombinedData />  
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <BarChart />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Transaction Analytics</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4 text-center">Expense Breakdown</h2>
           <PieChart />
         </div>
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4 text-center">Category-wise Expenses</h2>
+          <BarChart />
+        </div>
       </div>
-    </DataContext.Provider>
+    </div>
   );
 };
 

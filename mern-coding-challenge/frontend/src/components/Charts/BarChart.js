@@ -1,56 +1,57 @@
-import React, { useEffect, useContext, useState } from "react";
-import { Bar } from "react-chartjs-2";
+import React, { useEffect, useState, useContext } from "react";
 import { DataContext } from "../../context/DataContext";
-import { fetchBarChartData } from "../../services/api";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from "chart.js";
+import { fetchStatistics } from "../../services/api";
 
-// ✅ Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const BarChart = () => {
+const CombinedData = () => {
   const { selectedMonth } = useContext(DataContext);
-  const [chartData, setChartData] = useState({ labels: [], data: [] });
+  const [stats, setStats] = useState({ totalSale: 0, soldItems: 0, unsoldItems: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchBarChartData(selectedMonth).then((data) => {
-      if (data?.labels?.length && data?.values?.length) {
-        setChartData({
-          labels: data.labels,
-          data: data.values,
-        });
-      } else {
-        console.error("Invalid Bar Chart Data:", data);
-      }
-    }).catch((error) => console.error("Error fetching bar chart data:", error));
+    setLoading(true);
+    setError(null);
+
+    fetchStatistics(selectedMonth)
+      .then((data) => {
+        if (data) {
+          setStats({
+            totalSale: data.totalSaleAmount || 0,
+            soldItems: data.totalSoldItems || 0,
+            unsoldItems: data.totalNotSoldItems || 0,
+          });
+        } else {
+          console.error("Invalid Statistics Data:", data);
+          setError("Invalid data received.");
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching statistics:", err);
+        setError("Failed to load data. Please try again.");
+        setLoading(false);
+      });
   }, [selectedMonth]);
 
+  if (loading) return <p className="text-center text-gray-500">Loading statistics...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
+
   return (
-    <div className="mt-4">
-      <Bar
-        data={{
-          labels: chartData.labels,
-          datasets: [
-            {
-              label: "Items in Price Range",
-              data: chartData.data,
-              backgroundColor: "rgba(75,192,192,0.6)",
-              borderColor: "rgba(75,192,192,1)",
-              borderWidth: 1,
-            },
-          ],
-        }}
-        options={{ responsive: true, maintainAspectRatio: false }}
-      />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md text-center">
+        <h3 className="text-xl font-bold">Total Sale</h3>
+        <p className="text-2xl">₹{stats.totalSale.toLocaleString()}</p>
+      </div>
+      <div className="bg-green-500 text-white p-4 rounded-lg shadow-md text-center">
+        <h3 className="text-xl font-bold">Sold Items</h3>
+        <p className="text-2xl">{stats.soldItems.toLocaleString()}</p>
+      </div>
+      <div className="bg-red-500 text-white p-4 rounded-lg shadow-md text-center">
+        <h3 className="text-xl font-bold">Not Sold Items</h3>
+        <p className="text-2xl">{stats.unsoldItems.toLocaleString()}</p>
+      </div>
     </div>
   );
 };
 
-export default BarChart;
+export default CombinedData;
